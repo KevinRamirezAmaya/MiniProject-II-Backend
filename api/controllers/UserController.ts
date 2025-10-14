@@ -5,7 +5,7 @@ import { Request, Response } from 'express';
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import PasswordResetToken from '../models/PasswordResetToken';
-import EmailService from '../services/EmailService';
+import { sendPasswordResetEmail } from '../services/EmailService';
 import User from '../models/User';
 
 /**
@@ -64,17 +64,17 @@ class UserController extends GlobalController<IUser> {
                 expiresAt: new Date(Date.now() + 3600000) // 1 hour expiry
             });
             
-            // Generate password reset link
-            const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${token}`;
+            // Generate password reset token (just the token, not full URL)
+            const resetToken = token;
             
-            // Send email with reset link
-            const emailSent = await EmailService.sendPasswordResetEmail(
+            // Send email with reset token
+            const emailResult = await sendPasswordResetEmail(
                 user.email,
-                resetLink,
-                user.firstName
+                resetToken
             );
             
-            if (!emailSent) {
+            if (!emailResult.success) {
+                console.error('Email sending failed:', emailResult.error);
                 res.status(500).json({ message: 'Failed to send password reset email' });
                 return;
             }
