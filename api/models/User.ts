@@ -10,9 +10,11 @@ export interface IUser extends Document {
     email: string;
     password: string;
     age: number;
+    favorites: string[]
     createdAt: Date;
     updatedAt: Date;
     comparePassword(candidatePassword: string): Promise<boolean>;
+
 }
 
 /**
@@ -129,6 +131,8 @@ const UserSchema: Schema = new Schema(
                 message: () => 'Age must be a whole number'
             }
         },
+
+        favorites: [String]
     },
     {
         /**
