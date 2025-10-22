@@ -9,6 +9,8 @@ export interface IFilm extends Document {
     updatedAt: Date;
     description: string;
     posterImage: string; 
+    rating: number;
+    totalRatings: number;
 
 }
 
@@ -19,7 +21,9 @@ const FilmSchema: Schema = new Schema(
         releaseDate: {type: Date, required: true},
         description: {type: String, required: true},
         url: {type: String, required: true},
-        posterImage: {type: String, required: true}
+        posterImage: {type: String, required: true},
+        rating: {type: Number, default: 0, min: 0, max: 5},
+        totalRatings: {type: Number, default: 0}
     },
     {
         timestamps: true
