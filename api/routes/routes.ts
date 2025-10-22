@@ -1,5 +1,7 @@
 import express, { Router } from 'express';
 import userRoutes from './userRoutes';
+import filmRoutes from './filmRoutes'
+import ratingRoutes from './ratingRoutes';
 
 const router: Router = express.Router();
 
@@ -15,6 +17,8 @@ const router: Router = express.Router();
  *   - DELETE /users/:id  → Delete a user by ID
  */
 router.use("/users", userRoutes);
+router.use("/films", filmRoutes);
+router.use("/rating", ratingRoutes)
 
 /**
  * Export the main router instance.

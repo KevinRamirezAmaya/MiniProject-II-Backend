@@ -7,6 +7,8 @@ import jwt from 'jsonwebtoken';
 import PasswordResetToken from '../models/PasswordResetToken';
 import { sendPasswordResetEmail } from '../services/EmailService';
 import User from '../models/User';
+import { AuthRequest } from '../middleware/auth';
+import Film from '../models/Film';
 
 /**
  * Controller class for managing User resources.
@@ -220,6 +222,136 @@ class UserController extends GlobalController<IUser> {
             res.status(500).json({ message: 'An error occurred during authentication' });
         }
     }
+
+async addFavorite(req: AuthRequest, res: Response): Promise<void> {
+        try {
+            const { filmId } = req.params; // Get film ID from URL parameter
+            const userId = req.user?.userId; // Get user ID from auth middleware
+            
+            // Validate filmId
+            if (!filmId) {
+                res.status(400).json({ message: 'Film ID is required' });
+                return;
+            }
+            
+            // Check if film exists
+            const film = await Film.findById(filmId);
+            if (!film) {
+                res.status(404).json({ message: 'Film not found' });
+                return;
+            }
+            
+            // Find the user
+            const user = await User.findById(userId);
+            
+            // Check if film is already in favorites
+            if (user?.favorites.includes(filmId)){
+                res.status(400).json({message: "Film is already on favorites"})
+                return
+            }
+
+        await User.findByIdAndUpdate(
+            userId, 
+            { $push: { favorites: filmId } },
+            { new: true }
+        );
+            
+            res.status(200).json({
+                message: 'Film added to favorites successfully',
+                film: {
+                    id: film._id,
+                    name: film.name,
+                },
+            });
+            
+        } catch (error: any) {
+            console.error('Add favorite error:', error);
+            res.status(500).json({ 
+                message: 'An error occurred while adding film to favorites' 
+            });
+        }
+    }
+
+    async removeFavorite(req: AuthRequest, res: Response): Promise<void>{
+        try{
+            const { filmId } = req.params; // Get film ID from URL parameter
+            const userId = req.user?.userId; // Get user ID from auth middleware
+            
+            // Validate filmId
+            if (!filmId) {
+                res.status(400).json({ message: 'Film ID is required' });
+                return;
+            }
+            
+            // Check if film exists
+            const film = await Film.findById(filmId);
+            if (!film) {
+                res.status(404).json({ message: 'Film not found' });
+                return;
+            }
+            
+            // Find the user
+            const user = await User.findById(userId);
+            
+            // Check if film is already in favorites
+            if (!user?.favorites.includes(filmId)){
+                res.status(400).json({message: "Film is already deleted of favorites"})
+                return
+            }
+            
+        await User.findByIdAndUpdate(
+            userId,
+            { $pull: { favorites: filmId } },
+            { new: true }
+        );
+        
+            
+            res.status(200).json({
+                message: 'Film removed of favorites successfully',
+                film: {
+                    id: film._id,
+                    name: film.name,
+                },
+            });
+        }
+        catch (error: any) {
+            console.error('Remove favorite error:', error);
+            res.status(500).json({ 
+                message: 'An error occurred while removing film of favorites' 
+            });
+        }
+    }
+
+   async getFavorites(req: AuthRequest, res: Response): Promise<void> {
+    try {
+        const userId = req.user?.userId;
+        
+        // Find the user
+        const user = await User.findById(userId);
+        
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+        
+        // Get full film details for each favorite ID
+        const favoriteFilms = await Film.find({
+            '_id': { $in: user.favorites }
+        });
+        
+        res.status(200).json({
+            message: 'Favorites retrieved successfully',
+            favorites: favoriteFilms // Array of full film objects
+        });
+        
+    } catch (error: any) {
+        console.error('Get favorites error:', error);
+        res.status(500).json({ 
+            message: 'An error occurred while retrieving favorites' 
+        });
+    }
+}
+
 }
 
 /**
