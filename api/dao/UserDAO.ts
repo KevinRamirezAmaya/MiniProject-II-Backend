@@ -33,6 +33,15 @@ class UserDAO extends GlobalDAO<IUser> {
         const user = await this.model.findById(id);
         if (!user) throw new Error("User not found");
         
+        // If currentPassword is provided, verify it
+        if ((updateData as any).currentPassword) {
+          const isPasswordValid = await user.comparePassword((updateData as any).currentPassword);
+          if (!isPasswordValid) {
+            throw new Error("Current password is incorrect");
+          }
+          // Remove currentPassword from updateData so it's not saved
+          delete (updateData as any).currentPassword;
+        }
 
         Object.keys(updateData).forEach(key => {
           (user as any)[key] = (updateData as any)[key];
