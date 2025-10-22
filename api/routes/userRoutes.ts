@@ -1,9 +1,12 @@
 import express, { Router, Request, Response } from 'express';
 import UserController from '../controllers/UserController';
 import { authenticate, isOwnAccount } from '../middleware/auth';
+import { AuthRequest } from '../middleware/auth';
 
 const router: Router = express.Router();
-
+router.get("/favorites", authenticate, (req: AuthRequest, res: Response) => 
+  UserController.getFavorites(req, res)
+);
 /**
  * @route GET /users
  * @description Retrieve all users.
@@ -78,7 +81,20 @@ router.post("/login", (req: Request, res: Response) =>
   UserController.login(req, res)
 );
 
+router.post("/favorites/:filmId", authenticate, (req: AuthRequest, res: Response) => 
+  UserController.addFavorite(req, res)
+);
+
 /**
- * Export the router instance to be mounted in the main routes file.
+ * @route DELETE /users/favorites/:filmId
+ * @description Remove a film from the authenticated user's favorites.
+ * @param {string} filmId - The unique identifier of the film to remove from favorites.
+ * @access Private - Requires authentication
  */
+router.delete("/favorites/:filmId", authenticate, (req: AuthRequest, res: Response) => 
+  UserController.removeFavorite(req, res)
+);
+
+
+
 export default router;
