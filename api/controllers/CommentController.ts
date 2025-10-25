@@ -87,7 +87,7 @@ class CommentController {
             }
             
             const comments = await CommentDAO.getByFilmId(filmId);
-            const totalComments = await CommentDAO.getCountByFilmId(filmId);
+            const totalComments = comments.length;
             
             res.status(200).json({
                 message: 'Comments retrieved successfully',
