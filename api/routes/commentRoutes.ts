@@ -7,7 +7,7 @@ const router: Router = express.Router();
 /**
  * Comment Routes
  * 
- * All routes require authentication via JWT token.
+ * All routes in this file require authentication via JWT token.
  * Token must be provided in the Authorization header as: Bearer <token>
  */
 
