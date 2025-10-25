@@ -2,6 +2,7 @@ import express, { Router } from 'express';
 import userRoutes from './userRoutes';
 import filmRoutes from './filmRoutes'
 import ratingRoutes from './ratingRoutes';
+import commentRoutes from './commentRoutes';
 
 const router: Router = express.Router();
 
@@ -18,7 +19,22 @@ const router: Router = express.Router();
  */
 router.use("/users", userRoutes);
 router.use("/films", filmRoutes);
-router.use("/rating", ratingRoutes)
+router.use("/rating", ratingRoutes);
+
+/**
+ * Mount comment-related routes.
+ * 
+ * All routes defined in {@link commentRoutes} will be accessible under `/comments`.
+ * Example:
+ *   - GET    /comments/:commentId  → Get a specific comment
+ *   - PUT    /comments/:commentId  → Update a comment (owner only)
+ *   - DELETE /comments/:commentId  → Delete a comment (owner only)
+ * 
+ * Film-specific comment routes are under `/films`:
+ *   - GET  /films/:filmId/comments     → Get all comments for a film
+ *   - POST /films/:filmId/comments     → Create a comment on a film (requires auth)
+ */
+router.use("/comments", commentRoutes);
 
 /**
  * Export the main router instance.
