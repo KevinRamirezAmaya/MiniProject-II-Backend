@@ -1,5 +1,6 @@
 import express, { Router, Request, Response } from 'express';
 import UserController from '../controllers/UserController';
+import CommentController from '../controllers/CommentController';
 import { authenticate, isOwnAccount } from '../middleware/auth';
 import { AuthRequest } from '../middleware/auth';
 
@@ -21,6 +22,16 @@ router.get("/", (req: Request, res: Response) => UserController.getAll(req, res)
  * @access Public
  */
 router.get("/:id", (req: Request, res: Response) => UserController.read(req, res));
+
+/**
+ * @route GET /users/:userId/comments
+ * @description Retrieve all comments made by a specific user.
+ * @param {string} userId - The unique identifier of the user.
+ * @access Public
+ */
+router.get("/:userId/comments", (req: Request, res: Response) => 
+  CommentController.getByUserId(req as AuthRequest, res)
+);
 
 /**
  * @route POST /users
