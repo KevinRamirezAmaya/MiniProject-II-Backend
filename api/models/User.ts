@@ -3,16 +3,28 @@ import bcrypt from 'bcrypt';
 
 /**
  * Interface representing a User document in MongoDB
+ * 
+ * @interface IUser
+ * @extends {Document}
  */
 export interface IUser extends Document {
+    /** User's first name */
     firstName: string;
+    /** User's last name */
     lastName: string;
+    /** User's email address - must be unique */
     email: string;
+    /** User's hashed password */
     password: string;
+    /** User's age */
     age: number;
+    /** Array of film IDs that the user has marked as favorites */
     favorites: string[]
+    /** Timestamp when the user was created */
     createdAt: Date;
+    /** Timestamp when the user was last updated */
     updatedAt: Date;
+    /** Method to compare password with hashed password */
     comparePassword(candidatePassword: string): Promise<boolean>;
 
 }

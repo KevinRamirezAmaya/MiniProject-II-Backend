@@ -2,18 +2,23 @@ import User, { IUser } from '../models/User';
 import GlobalDAO from './GlobalDAO';
 
 /**
- * Data Access Object (DAO) for the User model.
+ * Data Access Object (DAO) for the User model
  *
  * Extends the generic {@link GlobalDAO} class to provide
  * database operations (create, read, update, delete, getAll)
  * specifically for User documents.
+ * 
+ * @class UserDAO
+ * @extends {GlobalDAO<IUser>}
  */
 class UserDAO extends GlobalDAO<IUser> {
   /**
-   * Create a new UserDAO instance.
+   * Create a new UserDAO instance
    *
    * Passes the User Mongoose model to the parent class so that
    * all inherited CRUD methods operate on the User collection.
+   * 
+   * @constructor
    */
   constructor() {
     super(User);

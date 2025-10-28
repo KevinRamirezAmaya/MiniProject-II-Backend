@@ -2,12 +2,20 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 /**
  * Interface representing a Comment document in MongoDB
+ * 
+ * @interface IComment
+ * @extends {Document}
  */
 export interface IComment extends Document {
+    /** Reference to the film being commented on */
     filmId: mongoose.Types.ObjectId;
+    /** Reference to the user who created the comment */
     userId: mongoose.Types.ObjectId;
+    /** The comment text content */
     text: string;
+    /** Timestamp when the comment was created */
     createdAt: Date;
+    /** Timestamp when the comment was last updated */
     updatedAt: Date;
 }
 

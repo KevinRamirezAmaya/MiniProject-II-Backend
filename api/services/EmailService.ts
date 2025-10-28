@@ -1,23 +1,78 @@
+/**
+ * Email service for the Lumiere Movie API
+ * 
+ * Handles sending emails using SendGrid API, specifically for password reset
+ * functionality and other user communication needs.
+ * 
+ * @fileoverview Email service implementation using SendGrid
+ * @requires @sendgrid/mail
+ */
+
 import sgMail from '@sendgrid/mail';
 
+/**
+ * Initialize SendGrid API key from environment variables
+ * This must be set before any email operations can be performed
+ */
 sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
 
+/**
+ * Interface for email sending response
+ * 
+ * @interface EmailResponse
+ */
 interface EmailResponse {
+  /** Whether the email was sent successfully */
   success: boolean;
+  /** The message ID from SendGrid (if successful) */
   messageId?: string;
+  /** Error message (if failed) */
   error?: string;
 }
 
+/**
+ * Send a password reset email to a user
+ * 
+ * Creates and sends a professionally formatted HTML email with password reset instructions.
+ * The email includes a reset link, security information, and branded styling.
+ * 
+ * @async
+ * @function sendPasswordResetEmail
+ * @param {string} email - The recipient's email address
+ * @param {string} resetToken - The unique token for password reset
+ * @returns {Promise<EmailResponse>} Promise that resolves to email sending result
+ * 
+ * @example
+ * ```typescript
+ * const result = await sendPasswordResetEmail('user@example.com', 'abc123token');
+ * if (result.success) {
+ *   console.log('Email sent successfully:', result.messageId);
+ * } else {
+ *   console.error('Email failed:', result.error);
+ * }
+ * ```
+ */
 const sendPasswordResetEmail = async (email: string, resetToken: string): Promise<EmailResponse> => {
+  /**
+   * Construct the password reset URL using the frontend URL and token
+   */
   const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
+  /**
+   * Email message configuration object
+   * Contains recipient, sender, subject, and HTML content
+   */
   const msg = {
+    /** Recipient email address */
     to: email,
+    /** Sender information */
     from: {
       email: process.env.EMAIL_SENDER as string,
       name: "Lumiere Soporte"
     },
+    /** Email subject line */
     subject: "Reestablece tu contraseña de Lumiere",
+    /** HTML email content with embedded styling and branding */
     html: `<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -128,12 +183,25 @@ const sendPasswordResetEmail = async (email: string, resetToken: string): Promis
   };
 
   try {
+    // Send email using SendGrid
     const [response] = await sgMail.send(msg);
-    return { success: true, messageId: response.headers['x-message-id'] };
+    return { 
+      success: true, 
+      messageId: response.headers['x-message-id'] 
+    };
   } catch (error: any) {
+    // Log error and return failure response
     console.error("Email sending failed:", error);
-    return { success: false, error: error.message || 'Unknown error' };
+    return { 
+      success: false, 
+      error: error.message || 'Unknown error' 
+    };
   }
 };
 
+/**
+ * Export email service functions
+ * 
+ * @exports {Function} sendPasswordResetEmail - Function to send password reset emails
+ */
 export { sendPasswordResetEmail };

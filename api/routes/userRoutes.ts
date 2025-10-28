@@ -4,22 +4,40 @@ import CommentController from '../controllers/CommentController';
 import { authenticate, isOwnAccount } from '../middleware/auth';
 import { AuthRequest } from '../middleware/auth';
 
+/**
+ * Express router for user-related routes
+ * 
+ * Handles all HTTP operations for users including authentication,
+ * CRUD operations, favorites management, and user comments.
+ * 
+ * @type {Router}
+ */
 const router: Router = express.Router();
+
+/**
+ * @route GET /users/favorites
+ * @description Retrieve current user's favorite films
+ * @access Private - Requires authentication
+ * @returns {Object} Object containing user's favorite films array
+ */
 router.get("/favorites", authenticate, (req: AuthRequest, res: Response) => 
   UserController.getFavorites(req, res)
 );
+
 /**
  * @route GET /users
- * @description Retrieve all users.
+ * @description Retrieve all users in the database
  * @access Public
+ * @returns {Array<User>} Array of all user objects
  */
 router.get("/", (req: Request, res: Response) => UserController.getAll(req, res));
 
 /**
  * @route GET /users/:id
- * @description Retrieve a user by ID.
- * @param {string} id - The unique identifier of the user.
+ * @description Retrieve a specific user by their ID
  * @access Public
+ * @param {string} id - The unique identifier of the user
+ * @returns {User} The user object with the specified ID
  */
 router.get("/:id", (req: Request, res: Response) => UserController.read(req, res));
 

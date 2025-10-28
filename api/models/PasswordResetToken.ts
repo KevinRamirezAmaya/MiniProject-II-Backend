@@ -1,13 +1,21 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 /**
- * Interface for the Password Reset Token document
+ * Interface representing a Password Reset Token document in MongoDB
+ * 
+ * @interface IPasswordResetToken
+ * @extends {Document}
  */
 export interface IPasswordResetToken extends Document {
+    /** Reference to the user requesting the password reset */
     userId: mongoose.Schema.Types.ObjectId;
+    /** The unique token string used to validate the reset request */
     token: string;
+    /** Timestamp when the token was created */
     createdAt: Date;
+    /** Timestamp when the token expires */
     expiresAt: Date;
+    /** Whether the token has been used */
     used: boolean;
 }
 
