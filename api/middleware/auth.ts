@@ -2,14 +2,21 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { config } from 'dotenv';
 
+// Load environment variables
 config();
 
 /**
- * Interface to extend Express Request with user information
+ * Interface to extend Express Request with authenticated user information
+ * 
+ * @interface AuthRequest
+ * @extends {Request}
  */
 export interface AuthRequest extends Request {
+  /** Authenticated user information extracted from JWT token */
   user?: {
+    /** The unique identifier of the authenticated user */
     userId: string;
+    /** The email address of the authenticated user */
     email: string;
   };
 }
@@ -17,9 +24,26 @@ export interface AuthRequest extends Request {
 /**
  * Middleware to verify JWT tokens and authenticate requests
  * 
- * @param req - Express request object
- * @param res - Express response object
- * @param next - Express next function
+ * Extracts and validates JWT tokens from the Authorization header,
+ * adds user information to the request object for authenticated routes.
+ * 
+ * @function authenticate
+ * @param {AuthRequest} req - Express request object (extended with user info)
+ * @param {Response} res - Express response object
+ * @param {NextFunction} next - Express next function to continue middleware chain
+ * @returns {void}
+ * 
+ * @throws {401} When no token is provided or token format is invalid
+ * @throws {401} When JWT token is invalid or expired
+ * @throws {500} When JWT_SECRET environment variable is not configured
+ * 
+ * @example
+ * ```typescript
+ * // Usage in route
+ * router.get('/protected', authenticate, (req: AuthRequest, res) => {
+ *   console.log(req.user?.userId); // Access authenticated user ID
+ * });
+ * ```
  */
 export const authenticate = (req: AuthRequest, res: Response, next: NextFunction): void => {
   try {
