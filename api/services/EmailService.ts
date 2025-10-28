@@ -1,134 +1,139 @@
-import * as nodemailer from 'nodemailer';
+import sgMail from '@sendgrid/mail';
 
-// Interface for email response
+sgMail.setApiKey(process.env.SENDGRID_API_KEY as string);
+
 interface EmailResponse {
-    success: boolean;
-    messageId?: string;
-    error?: string;
+  success: boolean;
+  messageId?: string;
+  error?: string;
 }
 
-const createTransporter = (): nodemailer.Transporter => {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
-};
-
 const sendPasswordResetEmail = async (email: string, resetToken: string): Promise<EmailResponse> => {
-    const transporter = createTransporter();
+  const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
 
-    const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
+  const msg = {
+    to: email,
+    from: {
+      email: process.env.EMAIL_SENDER as string,
+      name: "Lumiere Soporte"
+    },
+    subject: "Reestablece tu contraseña de Lumiere",
+    html: `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Reestablecimiento de contraseña - Lumiere</title>
+</head>
+<body style="margin:0; padding:0; background-color:#000000; font-family: Arial, Helvetica, sans-serif; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%;">
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#000000; padding:24px 0;">
+    <tr>
+      <td align="center">
+        <!-- Contenedor principal -->
+        <table role="presentation" cellpadding="0" cellspacing="0" width="600" style="max-width:600px; width:100%; background:#0a0a0a; border-radius:8px; overflow:hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.6);">
+          
+          <!-- Header / barra superior -->
+          <tr>
+            <td align="center" style="background: linear-gradient(90deg,#05120b,#00150d); padding:28px;">
+              <!-- Logo (si usas CID, mantener cid:logo_image) -->
+              <img src="cid:logo_image" alt="Lumiere" width="140" style="display:block; height:auto; max-width:140px;">
+            </td>
+          </tr>
 
-    const mailOptions: nodemailer.SendMailOptions = {
-        from: `"Lumiere Soporte" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: 'Reestablece tu contraseña de Lumiere',
-        html: `
- <!DOCTYPE html>
-            <html>
-            <head>
-                <meta charset="UTF-8">
-                <title>Reestablecimiento de contraseña cuenta Taskify</title>
-            </head>
-            <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color: #f4f4f4;">
-                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tr>
-                        <td align="center" style="padding: 20px 0;">
-                            <!-- Banner with Logo -->
-                            <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="600" style="background-color: #ffffff; border-radius: 6px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                                <tr>
-                                    <td align="center" style="background-color: #14401A; padding: 30px;">
-                                        <!-- Logo dinámico -->
-                                        <img src="cid:logo_image" alt="Taskify Logo" width="150" style="display: block; max-width: 150px; height: auto;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td align="center" style="padding: 40px 30px 10px 30px;">
-                                        <h1 style="margin: 0; font-size: 28px; color: #14401A; font-weight: 600;">¡Hola!</h1>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td align="center" style="padding: 10px 30px 20px 30px;">
-                                        <p style="margin: 0; font-size: 16px; color: #c5c5c5ff; line-height: 1.6;">
-                                            Hemos recibido tu solicitud de cambio de contraseña para tu cuenta de Lumiere.<br>
-                                            Da clic en el siguiente botón para ser redirigido al cambio de contraseña:
+          <!-- Título -->
+          <tr>
+            <td style="padding:30px 28px 12px 28px; text-align:center;">
+              <h1 style="margin:0; font-size:26px; line-height:1.1; color:#e6fff6; font-weight:700;">
+                Restablece tu contraseña
+              </h1>
+            </td>
+          </tr>
 
-                                        </p>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td align="center" style="padding: 10px 30px;">
-                                        <!-- <p style="margin: 0 0 25px 0; font-size: 16px; color: #666666;">
-                                            Da clic en el siguiente botón para ser redirigido al cambio de contraseña:
-                                        </p>
-                                        <!-- Botón estilizado -->
-                                        <table role="presentation" border="0" cellpadding="0" cellspacing="0">
-                                            <tr> 
-                                                <td style="border-radius: 8px; background: #14401A; box-shadow: 0 4px 12px rgba(178, 202, 222, 0.3);">
-                                                    <a href="${resetURL}" style="display: inline-block; padding: 16px 32px; font-family: Arial, sans-serif; font-size: 16px; font-weight: bold; color: #ffffff; text-decoration: none; border-radius: 8px; transition: all 0.3s ease;">
-                                                        Cambiar mi Contraseña
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 5px 30px;">
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td style="padding: 20px 30px;">
-                                        <!-- Aviso de seguridad -->
-                                        <div style="background-color: #fff7ed; border: 1px solid #fb923c; border-radius: 8px; padding: 20px;">
-                                            <p style="margin: 0 0 10px 0; font-weight: bold; color: #ea580c; font-size: 14px;">
-                                                ⚠️ Importante:
-                                            </p>
-                                            <ul style="margin: 5px 0 0 20px; color: #ea580c; font-size: 14px; line-height: 1.5;">
-                                                <li>Este enlace expira en <strong>1 hora</strong></li>
-                                                <li>Si no realizaste esta solicitud, haz caso omiso a este mensaje</li>
-                                                <li>Tu contraseña actual permanece segura hasta que la cambies</li>
-                                            </ul>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td align="center" style="padding: 30px; background-color: #f8fafc; border-top: 1px solid #e2e8f0;">
-                                        <p style="margin: 0 0 10px 0; color: #a4b1ac; font-size: 14px;">
-                                            Saludos cordiales,
-                                        </p>
-                                        <p style="margin: 0 0 15px 0; color: #14401A; font-size: 16px; font-weight: 600;">
-                                            El equipo de Lumiere
-                                        </p>
-                                        <p style="margin: 0; color: #bbbbbbbb; font-size: 12px;">
-                                            Este es un correo automático, por favor no respondas a esta dirección.
-                                        </p>
-                                    </td>
-                                </tr>
-                            </table>
-                        </td>
-                    </tr>
-                </table>
-            </body>
-            </html>
-        `
-    };
+          <!-- Mensaje principal -->
+          <tr>
+            <td style="padding:0 28px 20px 28px; text-align:center;">
+              <p style="margin:0; color:#bfeee0; font-size:15px; line-height:1.6;">
+                Hemos recibido una solicitud para cambiar la contraseña de tu cuenta de <strong>Lumiere</strong>.
+                Haz clic en el botón de abajo para crear una nueva contraseña. Este enlace expira en <strong>1 hora</strong>.
+              </p>
+            </td>
+          </tr>
 
-    try {
-        const info = await transporter.sendMail(mailOptions);
-        return { success: true, messageId: info.messageId };
-    } catch (error) {
-        console.error('Email sending failed:', error);
-        return { 
-            success: false, 
-            error: error instanceof Error ? error.message : 'Unknown error occurred'
-        };
-    }
+          <!-- Botón -->
+          <tr>
+            <td align="center" style="padding:16px 28px 26px 28px;">
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="border-radius:8px; background:linear-gradient(180deg,#00d084,#00b86a);">
+                    <a href="${resetURL}" target="_blank" style="display:inline-block; padding:14px 30px; font-size:16px; color:#00140a; font-weight:700; text-decoration:none; border-radius:8px;">
+                      Cambiar mi contraseña
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Texto alternativo y seguridad -->
+          <tr>
+            <td style="padding:0 28px 18px 28px;">
+              <p style="margin:0; color:#96e8c9; font-size:13px; line-height:1.5;">
+                Si no puedes pulsar el botón, copia y pega este enlace en tu navegador:
+              </p>
+              <p style="word-break:break-all; margin:8px 0 0 0; color:#8af2c6; font-size:13px;">
+                <a href="${resetURL}" target="_blank" style="color:#8af2c6; text-decoration:underline;">${resetURL}</a>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Información de seguridad (caja) -->
+          <tr>
+            <td style="padding:18px 28px;">
+              <div style="background:#07120f; border:1px solid rgba(0,208,132,0.12); border-radius:8px; padding:14px;">
+                <p style="margin:0 0 8px 0; color:#00d084; font-weight:700; font-size:14px;">
+                  ⚠️ Importante
+                </p>
+                <ul style="margin:0; padding-left:18px; color:#b9f7dd; font-size:13px; line-height:1.5;">
+                  <li>El enlace expira en <strong>1 hora</strong>.</li>
+                  <li>Si no solicitaste este cambio, puedes ignorar este correo.</li>
+                  <li>Tu contraseña actual se mantendrá segura hasta que la cambies.</li>
+                </ul>
+              </div>
+            </td>
+          </tr>
+
+          <!-- Pie / firma -->
+          <tr>
+            <td style="padding:22px 28px 36px 28px; text-align:center; background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0.03));">
+              <p style="margin:0 0 6px 0; color:#b9f7dd; font-size:14px;">
+                Saludos cordiales,
+              </p>
+              <p style="margin:0 0 12px 0; color:#e6fff6; font-weight:700; font-size:15px;">
+                El equipo de Lumiere
+              </p>
+              <p style="margin:0; color:#6a6f6b; font-size:12px;">
+                Este es un correo automático — por favor no respondas a esta dirección.
+              </p>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Fin contenedor principal -->
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+`
+  };
+
+  try {
+    const [response] = await sgMail.send(msg);
+    return { success: true, messageId: response.headers['x-message-id'] };
+  } catch (error: any) {
+    console.error("Email sending failed:", error);
+    return { success: false, error: error.message || 'Unknown error' };
+  }
 };
 
-export {
-    sendPasswordResetEmail
-};
+export { sendPasswordResetEmail };
