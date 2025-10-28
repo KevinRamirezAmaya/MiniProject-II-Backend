@@ -1,10 +1,9 @@
-import GlobalController from './GlobalController';
-import RatingDAO from '../dao/RatingDAO';
-import { IRating } from '../models/Rating';
 import { Request, Response } from 'express';
-import Rating from '../models/Rating';
+import RatingDAO from '../dao/RatingDAO';
 import { AuthRequest } from '../middleware/auth';
 import Film from '../models/Film';
+import Rating, { IRating } from '../models/Rating';
+import GlobalController from './GlobalController';
 
 
 class RatingController extends GlobalController<IRating> {
@@ -136,6 +135,51 @@ class RatingController extends GlobalController<IRating> {
             res.status(500).json({ 
                 message: 'An error occurred while retrieving film ratings' 
             });
+        }
+    }
+
+    // Override update method to recalculate film average when rating is updated
+    async update(req: Request, res: Response): Promise<void> {
+        try {
+            const { id } = req.params;
+            const { rate } = req.body;
+
+            // Validate rating value
+            if (rate !== undefined && (rate < 0 || rate > 5)) {
+                res.status(400).json({ 
+                    message: 'Rating must be a number between 0 and 5' 
+                });
+                return;
+            }
+
+            // Find the rating to get the film ID before updating
+            const existingRating = await Rating.findById(id);
+            if (!existingRating) {
+                res.status(404).json({ message: 'Rating not found' });
+                return;
+            }
+
+            // Update the rating
+            const updatedRating = await this.dao.update(id, req.body);
+
+            // Recalculate film's average rating
+            await this.updateFilmAverageRating(existingRating.film.toString());
+
+            // Get updated film data
+            const updatedFilm = await Film.findById(existingRating.film, 'name rating totalRatings');
+
+            res.status(200).json({
+                message: 'Rating updated successfully',
+                rating: updatedRating,
+                filmRating: {
+                    filmName: updatedFilm?.name,
+                    averageRating: updatedFilm?.rating,
+                    totalRatings: updatedFilm?.totalRatings
+                }
+            });
+        } catch (error: any) {
+            console.error('Update rating error:', error);
+            res.status(400).json({ message: error.message });
         }
     }
 

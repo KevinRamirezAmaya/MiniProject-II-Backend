@@ -45,7 +45,8 @@ class FilmController extends GlobalController<IFilm> {
                     genre: film.genre,
                     description: film.description,
                     // rate: film.rate,
-                    releaseDate: film.releaseDate
+                    releaseDate: film.releaseDate,
+                    subtitles: film.subtitles
                 }
             });
 
